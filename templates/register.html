@@ -1,2 +1,7 @@
 {% extends 'base.html' %}
-{% block title %} Create Account {% endblock %}
+{% block title %} Create Account {% endblock %}{% block main_content %}
+  <form action="/register" method="get">
+
+    <input type="submit" value="Create New Account">
+  </form>
+{% endblock %}
