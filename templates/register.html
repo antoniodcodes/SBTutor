@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% block title %} Create Account {% endblock %}{% block main_content %}
-  <form action="/register" method="get">
-
+  <form action="/register" method="get" class="">
+    <div>{{ register_form.first_name.label }}: {{ register_form.first_name(class="") }}</div>
+    <div>{{ register_form.last_name.label }}: {{ register_form.last_name(class="") }}</div>
+    <div>{{ register_form.email.label }}: {{ register_form.email(class="") }}</div>
+    <div>{{ register_form.password.label }}: {{ register_form.password(class="" ) }}</div>
+    <div>{{ register_form.confirm_password.label }} {{ register_form.confirm_password(class="") }}</div>
     <input type="submit" value="Create New Account">
   </form>
 {% endblock %}
