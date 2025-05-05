@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %} Login {% endblock %}
 {% block main_content %}
-  <form action="/login" method="get" class="">
+  <form action="/user_dashboard" method="get" class="">
     <div>{{ login_form.email.label}}: {{ login_form.email(class="") }}</div>
     <div>{{ login_form.password.label }}: {{ login_form.password(class="") }}</div>
     <input type="submit" value="Login">
