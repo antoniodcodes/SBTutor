@@ -1,7 +1,7 @@
 from flask import Flask, session, flash, request, render_template, redirect, jsonify
 from flask_bcrypt import Bcrypt
-from form_validation import RegistrationForm, LoginForm
-from models import db, UserSchema
+from form_validation import RegistrationForm, LoginForm, ProfileForm
+from models import db, UserSchema, TestSchema, QuestionSchema
 import crud
 import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -30,6 +30,7 @@ def login():
 def register():
   return render_template("register.html")
 
+# @jwt_required()
 @app.route('/profile', methods=['GET'])
 def user_profile():
   email = session['user_email']
@@ -39,6 +40,7 @@ def user_profile():
   else:
     return redirect("/")
 
+# @jwt_required()
 @app.route("/user_dashboard", methods=['POST'])
 def userdashboard():
   # Get user
@@ -48,13 +50,71 @@ def userdashboard():
   
   #validate user and check that passwords match
   if user and bcrypt.check_password(user.hashed_password, password):
+    if user.is_admin:
+      return render_template('admin_dashboard.html', admin_user=user_schema.dump(user))
     return render_template("user_dashboard.html", user=user_schema.dump(user))
   else:
     flash("User not found")
     return redirect("/"), 404 
+
+@app.route("/tests")
+def tests():
   
+  # get User's level
+  user_level = crud.get_user_level_by_id(session['user_id'])
+  test_difficulty = crud.get_tests_by_difficulty(user_level) 
+  
+  # get tests by difficulty level
+  tests = crud.get_tests_by_difficulty(test_difficulty)
+  return render_template("tests.html", tests=tests)    
+  
+@app.route('/study_session')
+def study_session():
+
+  return render_template('study_session.html')
+
+@app.route('/simulation')
+def simulation():
+  return render_template('simulation.html')
+
+@app.route('/games')
+def games():
+  render_template('games.html')
+
+@app.route('/videos')
+def videos():
+  return render_template('/videos')
+
+@app.route('/flashcards')
+def flashcards():
+  return render_template('flashcards.html')
+  """ SB Tutor API Documentation
+      calls:
+      GET /api/users - Protected route - Admin call to get then entire list of users
+      POST /api/users - Creates a new user
+      GET /api/users/user_id - Protected route that gets a single user with user_id
+      PUT /api/users/user_id - Protected route that updates a user with user_id
+      DELETE /api/users/user_id = Protected route that deletes a user account with user_id
+
+      GET /api/words - Gets all flashcard data
+      GET /api/words/word_id - Gets a single word
+      POST /api/words/ - Protected route that allows the admin to add a new word
+      PUT /api/words/word_id - Protected route that allows the admin to update a word
+      DELETE /api/words/word_id - Protected route that deletes a word
+
+      GET /api/tests - Protected route that gets all tests
+      GET /api/tests/test_id - Gets a single test
+      POST /api/tests - Protected route that allows the admin to create a new test
+      PUT /api/tests/test_id - Protected route that allows the admin to update a test
+      DELETE /api/tests/test_id - Protected route that allows the admin to delete a test
+
+  
+  """
+ 
+ # User API Calls
   #TODO: add as a protected route
-  @app.route('/users')
+  @jwt_required()
+  @app.route('/api/users')
   def get_all_users():
     # get current user
 
@@ -64,7 +124,7 @@ def userdashboard():
     users = crud.get_users()
     return user_schema.dump(users)
   
-  @app.route('/users', methods=['POST'])
+  @app.route('/api/users', methods=['POST'])
   def create_account():
     #TDDO: get values from request form
 
@@ -77,7 +137,8 @@ def userdashboard():
 
 
   #TODO: add as a protected route
-  @app.route("/users/<int:user_id>", methods=['GET', 'PUT', 'DELETE'])
+  # @jwt_required()
+  @app.route("/api/users/<int:user_id>", methods=['GET', 'PUT', 'DELETE'])
   def user_details(user_id):
     user = crud.get_user_by_id(user_id)
     if user:
@@ -93,6 +154,16 @@ def userdashboard():
     else:
       return jsonify(message="User not found"), 404
   
+
+# Words API Calls
+
+
+
+
+# Tests API Calls
+
+
+
 
 
 # Connect to database

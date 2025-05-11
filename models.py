@@ -14,6 +14,7 @@ class User(db.Model):
   last_name = db.Column(db.String(50), nullable=False)
   email = db.Column(db.String(50), unique=True, nullable=False)
   hashed_password = db.Column(db.String(128), nullable=False)
+  level = db.Column(db.String(10), nullable=False, default='Novice')
   state = db.Column(db.String(2))
   country = db.Column(db.String(20))
   _created_at = db.Column(db.DateTime)
@@ -39,5 +40,17 @@ class TestSchema(ma.SQLAlchemyAutoSchema):
   class Meta:
     model = Test
 
+
     
-    
+class Question(db.Model):
+  __tablename__ = "questionbank"
+  #TODO: add fields
+
+
+
+  #TODO: add relationships
+
+
+class QuestionSchema(ma.SQLAlchemyAutoSchema):
+  class Meta:
+    model = Question

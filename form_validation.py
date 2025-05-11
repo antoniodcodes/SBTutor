@@ -12,5 +12,6 @@ class RegistrationForm(Form):
  password = PasswordField('Password', [validators.length(min=10), validators.EqualTo('confirm_password', message='Passwords do not match'), validators.InputRequired()])
  confirm_password = PasswordField('Reenter Password', [validators.length(min=10), validators.InputRequired()])
 
-
+class ProfileForm(Form):
+ pass
 

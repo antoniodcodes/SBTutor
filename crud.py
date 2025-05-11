@@ -7,6 +7,13 @@ def get_user_by_email(email):
 def get_user_by_id(id: int):
   return db.session.query(User).filter(User.id == id).first()
 
+def get_user_level_by_id(id: int):
+  user = get_user_by_id(id)
+  return user.level
+
+def get_user_level(user: User):
+  return user.level
+
 def get_users():
   return db.session.query(User).all()
 
@@ -22,18 +29,26 @@ def delete_user(id):
   return db.session.delete(user)
 
 def get_tests():
-  pass
+  return db.session.query(Test).all()
 
-def get_tests_by_difficulty():
-  pass
+def get_tests_by_difficulty(user_level: str):
+  level = 0
+  if user_level == 'Novice':
+    level = 1
+  elif user_level == 'Apprentice':
+    level = 2
+  elif user_level == 'Master':
+    level = 3
+  return db.session.query(Test).filter(Test.difficulty == level).all()
+  
 def get_tests_by_id(id):
+  return db.session.query(Test).filter(Test.id == id).first()
+
+def add_test(test: Test):
   pass
 
-def add_test(test):
+def update_test(test: Test):
   pass
 
-def update_test(test):
-  pass
-
-def delete_test(test):
+def delete_test(id):
   pass
