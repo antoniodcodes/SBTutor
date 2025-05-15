@@ -1,2 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'user_dashboard.html' %}
 {% block title %} User Profile {% endblock %}
+{% block main_content %}
+<form action="/api/user/{{user.id}}" method="POST">
+  {{ form.first_name.label }} {{ form.first_name()  }}<br>
+  {{ form.last_name.label }} {{ form.last_name() }}<br>
+  {{ form.email.label }} {{ form.email() }}<br>
+  {{ form.password.label }} {{ form.password() }}<br>
+  {{ form.country.label }} {{ form.country() }}<br>
+  {{ form.submit() }}
+  {% for message in get_flashed_messages() %}
+      <div class="alert alert-info">{{ message }}</div>
+  {% endfor %}
+</form>
+
+
+
+{% endblock %}

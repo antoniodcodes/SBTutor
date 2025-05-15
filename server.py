@@ -13,6 +13,8 @@ jwt = JWTManager(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 user_schema = UserSchema()
+test_schema = TestSchema()
+question_schema = QuestionSchema()
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -23,12 +25,14 @@ def get_index():
 
 @app.route('/login', methods=['GET'])
 def login():
-  return render_template("login.html")
+  form = LoginForm(request.form)
+  return render_template("login.html", form=form)
 
 
 @app.route('/register', methods=['GET'])
 def register():
-  return render_template("register.html")
+  form = RegistrationForm(request.form)
+  return render_template("register.html", form=form)
 
 # @jwt_required()
 @app.route('/profile', methods=['GET'])
@@ -36,7 +40,8 @@ def user_profile():
   email = session['user_email']
   user = crud.get_user_by_email(email)
   if user:
-    return render_template("user_profile.html")
+    form = ProfileForm()
+    return render_template("user_profile.html", form=form, user=user)
   else:
     return redirect("/")
 
@@ -66,7 +71,7 @@ def tests():
   
   # get tests by difficulty level
   tests = crud.get_tests_by_difficulty(test_difficulty)
-  return render_template("tests.html", tests=tests)    
+  return render_template("tests.html", tests=test_schema.dump(tests))    
   
 @app.route('/study_session')
 def study_session():
@@ -88,6 +93,8 @@ def videos():
 @app.route('/flashcards')
 def flashcards():
   return render_template('flashcards.html')
+
+
   """ SB Tutor API Documentation
       calls:
       GET /api/users - Protected route - Admin call to get then entire list of users
