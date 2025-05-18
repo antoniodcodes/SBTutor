@@ -1,10 +1,11 @@
 from flask import Flask, session, flash, request, render_template, redirect, jsonify
 from flask_bcrypt import Bcrypt
 from form_validation import RegistrationForm, LoginForm, ProfileForm
-from models import db, UserSchema, TestSchema, QuestionSchema
+from models import db, UserSchema, TestSchema, QuestionSchema, WordSchema
 import crud
 import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from models import User, Test, Question, Word
 
 app = Flask('__name__')
 bcrypt = Bcrypt(app)
@@ -15,6 +16,7 @@ app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 user_schema = UserSchema()
 test_schema = TestSchema()
 question_schema = QuestionSchema()
+word_schema = WordSchema()
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -45,7 +47,6 @@ def user_profile():
   else:
     return redirect("/")
 
-# @jwt_required()
 @app.route("/user_dashboard", methods=['POST'])
 def userdashboard():
   # Get user
@@ -55,12 +56,15 @@ def userdashboard():
   
   #validate user and check that passwords match
   if user and bcrypt.check_password(user.hashed_password, password):
+    session['user_id'] = user.id
+    access_token = create_access_token(identity=user.id)
     if user.is_admin:
-      return render_template('admin_dashboard.html', admin_user=user_schema.dump(user))
-    return render_template("user_dashboard.html", user=user_schema.dump(user))
+      return render_template('admin_dashboard.html', admin_user=user_schema.dump(user), access_token=access_token)
+    return render_template("user_dashboard.html", user=user_schema.dump(user), access_token=access_token)
   else:
     flash("User not found")
     return redirect("/"), 404 
+
 
 @app.route("/tests")
 def tests():
@@ -115,6 +119,11 @@ def flashcards():
       PUT /api/tests/test_id - Protected route that allows the admin to update a test
       DELETE /api/tests/test_id - Protected route that allows the admin to delete a test
 
+      GET /api/words - Gets all words
+      GET /api/words/word_id - Gets a single word
+      POST /api/words - Protected route that allows the admin to add a new word
+      PUT /api/words/word_id - Protected route that allows the admin to update a word
+
   
   """
  
@@ -134,13 +143,22 @@ def flashcards():
   @app.route('/api/users', methods=['POST'])
   def create_account():
     #TDDO: get values from request form
-
-    #TODO: check if a user with that given email already exists and give warning if user is found
-
-
-    #TODO: if user not in database, add user and then redirect to user dashboard
-
-    pass
+    
+    #checks if a user with that given email already exists and give warning if user is found
+    if "user_id" not in session:
+      user = crud.get_user_by_email(email)
+      if user:
+        flash("User with that email already exists")
+        return redirect("/register"), 400
+    #if user not in database, add user and then redirect to user dashboard
+      else:
+        
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(first_name=first_name, last_name=last_name, email=email, hashed_password=hashed_password) #TODO: add other fields as needed
+        crud.add_user(new_user)
+        session['user_id'] = new_user.id
+        return redirect('/user_dashboard'), 201
+    
 
 
   #TODO: add as a protected route
@@ -150,6 +168,7 @@ def flashcards():
     user = crud.get_user_by_id(user_id)
     if user:
       if request.method == 'GET':
+        
         return user_schema.dump(user)
       elif request.method == 'PUT':
         # get user info from form
@@ -163,6 +182,62 @@ def flashcards():
   
 
 # Words API Calls
+@app.route('/api/words', methods=['GET'])
+def get_all_words():
+  return jsonify(crud.get_words())
+
+
+@app.route('/api/words/<int: id>')
+def get_single_word(id):
+  word = crud.get_word_by_id(id)
+  if word:
+    return jsonify(word_schema.dump(word))
+  else:
+    return jsonify({"message": 'Word not found in our database'}), 404
+  
+@app.route('/api/words', methods=['POST'])
+def add_word():
+  #TODO: get word from form
+  word = crud.get_word_by_id(id)
+  
+  #TODO: check if word already exists in the database
+  if word:
+    return jsonify({'message': f"{word.name} already exists in our database"})
+  
+    #if word does not exist, add word to the database
+  else:
+   
+    new_word = None #TODO: replace with constructor values and form values
+    crud.add_word(new_word)
+    #flash success message and return word with 201 status code
+    flash(f"{new_word.name} has been successfully updated")
+    return jsonify({'message': 'Successfully added'}), 201
+
+@app.route('/api/words/<int:id>', methods=['PUT'])
+def update_word(id):
+  #TODO: get word values from form
+
+  updated_word = None #TODO: update with values from form
+  
+  word = crud.get_word_by_id(id)
+  if word:
+    crud.update_word(id, updated_word)
+    word = crud.get_word_by_id(id)
+    flash(f"{word.name} was successfully updated")
+    return jsonify({'message': 'Successfully updated', 'word': f'{word.name}'}), 200
+  else:
+    return jsonify({'message': 'Word does not exist in this database'}), 404
+
+@app.route('/api/words/<int:id>', methods=['DELETE'])
+def delete_word(id):
+  #TODO: check if word exists in the database
+
+  #TODO: delete word from the database
+
+  #TDDO: flash success message and return 204 status code
+
+  #TODO: if word is not found, return 404 status code and error message
+  pass
 
 
 

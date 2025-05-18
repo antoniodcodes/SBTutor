@@ -20,3 +20,14 @@ class ProfileForm(Form):
  confirm_password = PasswordField('Reenter Password', [validators.length(min=10), validators.InputRequired()])
  
 
+class WordForm(Form):
+ name = StringField('Name of Word', [validators.InputRequired()]),
+ definition = StringField("Definiton of Word", [validators.InputRequired()])
+ pronunciation = StringField("Word pronunciation")
+ etymology = StringField("Word origin")
+ usage = StringField("Usage Examples")
+ image_url = StringField("Image of Word")
+ audio_url = StringField("Audio Link")
+ parts_of_speech = StringField("Part of Speech")
+ difficulty = StringField("Difficulty Level")
+
