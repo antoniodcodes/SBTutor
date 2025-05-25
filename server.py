@@ -6,6 +6,9 @@ import crud
 import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import User, Test, Question, Word
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask('__name__')
 bcrypt = Bcrypt(app)
@@ -133,12 +136,16 @@ def flashcards():
   @app.route('/api/users')
   def get_all_users():
     # get current user
+    user = crud.get_tests_by_id(session["user_id"])
 
     # Determine if current user is an admin
-    # if admin, return list of users
-    # if not admin, return 403 and redirect to user dashboardm
-    users = crud.get_users()
-    return user_schema.dump(users)
+    if user.is_admin():
+      users = crud.get_users()
+      return user_schema.dump(users)
+    else:
+      flash("You are not authorized to view this content")
+      return redirect('/user_dashboard'), 404
+    
   
   @app.route('/api/users', methods=['POST'])
   def create_account():
@@ -165,6 +172,8 @@ def flashcards():
   # @jwt_required()
   @app.route("/api/users/<int:user_id>", methods=['GET', 'PUT', 'DELETE'])
   def user_details(user_id):
+
+    form = ProfileForm()
     user = crud.get_user_by_id(user_id)
     if user:
       if request.method == 'GET':
@@ -172,7 +181,12 @@ def flashcards():
         return user_schema.dump(user)
       elif request.method == 'PUT':
         # get user info from form
-        #TODO
+        if form.validate_on_submit():
+          first_name = form.first_name.data
+          last_name = form.last_name.data
+          email = form.email.data
+          password = form.password.data
+          country = form.country.data
         pass
       elif request.method == 'DELETE':
         crud.delete_user(user_id)
@@ -197,14 +211,15 @@ def get_single_word(id):
   
 @app.route('/api/words', methods=['POST'])
 def add_word():
-  #TODO: get word from form
+  #get word from form
   word = crud.get_word_by_id(id)
+
   
-  #TODO: check if word already exists in the database
+  #check if word already exists in the database
   if word:
     return jsonify({'message': f"{word.name} already exists in our database"})
   
-    #if word does not exist, add word to the database
+   #if word does not exist, add word to the database
   else:
    
     new_word = None #TODO: replace with constructor values and form values
@@ -231,19 +246,49 @@ def update_word(id):
 @app.route('/api/words/<int:id>', methods=['DELETE'])
 def delete_word(id):
   #TODO: check if word exists in the database
-
+  word = crud.get_word_by_id(id)
   #TODO: delete word from the database
+  if word:
+    crud.delete_user(id)
+    flash("Word was successfully deleted from our database")
+    return jsonify(message="Successfully deleted"), 204
+  else:
+    return jsonify(message="Word was not found in our database"), 404
+ 
 
-  #TDDO: flash success message and return 204 status code
+# Tests API Calls
+@jwt_required()
+@app.route("/api/tests")
+def get_tests():
+  user = crud.get_user_by_id(session["user_id"])
+  if user.is_admin():
+    return jsonify(crud.get_tests())
+  else:
+    return jsonify(message="You are not an authorized user of this content"), 404
+  
 
-  #TODO: if word is not found, return 404 status code and error message
+@jwt_required()
+@app.route('/api/route/tests/<int: test_id>')
+def get_single_test(test_id):
   pass
 
 
+@app.route('/api/tests', methods=['POST'])
+def create_new_test():
+  pass
 
 
-# Tests API Calls
+@app.route('/api/tests/<int: test_id')
+def get_single_test(test_id):
+  pass
 
+@app.route("/api/tests/<int: test_id", methods=['PUT'])
+def update_test(test_id):
+  pass
+
+@app.route("/api/tests/<int: test_id", methods=['DELETE'])
+def delete_test(test_id):
+  pass
 
 
 
@@ -251,7 +296,7 @@ def delete_word(id):
 # Connect to database
 def connect_to_db(app):
   app.config('SQLALCHEMY_DATABASE_URI') = f"""
-  postgresql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}@/{os.environ.get('DB_NAME')}?host=/cloudsl/{os.environ.get('INSTANCE_CONNECTION_NAME')}
+  postgresql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}@/{os.environ.get('CONNECTION_NAME')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}
   """
   app.config["SQLALCHEMY_ECHO"] = True
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

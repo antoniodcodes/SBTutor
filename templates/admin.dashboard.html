@@ -1,2 +1,14 @@
-{% extends 'base.html' %}
+{% extends 'user_dashboard.html' %}
 {% block title %} Admin Dashboard {% endblock %}
+
+
+{% block main_content %}
+<!-- Sidebar-->
+  {% block side_navigation %}
+      {% includes "admin_sidenav.html" %}
+  {% endblock %}
+<!-- Page Content-->
+  {% block page_content %}
+
+  {% endblock %}
+{% end block %}

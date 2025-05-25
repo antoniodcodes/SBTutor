@@ -1,2 +1,19 @@
 {% extends 'base.html' %}
 {% block title %} User Dashboard {% endblock %}
+{% add_stylesheets %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+{% endblock %}
+
+{% block site_headers %}
+  {% includes "user_header.html" %}
+{% endblock %1}
+{% block main_content %}
+<!-- Sidebar-->
+  {% block side_navigation %}
+      {% includes "user_sidenav.html" %}
+  {% endblock %}
+<!-- Page Content-->
+  {% block page_content %}
+
+  {% endblock %}
+{% end block %}

@@ -1,13 +1,18 @@
 {% extends 'user_dashboard.html' %}
 {% block title %} User Profile {% endblock %}
+{% block site_headers %}
+
+{% endblock %}
 {% block main_content %}
 <form action="/api/user/{{user.id}}" method="POST">
-  {{ form.first_name.label }} {{ form.first_name()  }}<br>
-  {{ form.last_name.label }} {{ form.last_name() }}<br>
-  {{ form.email.label }} {{ form.email() }}<br>
-  {{ form.password.label }} {{ form.password() }}<br>
-  {{ form.country.label }} {{ form.country() }}<br>
-  {{ form.submit() }}
+  {{ form.hidden_tag }}
+  {{ form.first_name.label(class="form-label") }} {{ form.first_name(class="form-control")  }}<br>
+  {{ form.last_name.label(class="form-label") }} {{ form.last_name(class='form-control') }}<br>
+  {{ form.email.label(class="form-label") }} {{ form.email(class="form-control") }}<br>
+  {{ form.password.label(class="form-label") }} {{ form.password(class="form-control") }}<br>
+  {{ form.state.label(class="form-label")}} {{form.state(class="form-control")}}
+  {{ form.country.label(class="form-label") }} {{ form.country(class="form-control") }}<br>
+  {{ form.submit(class="btn btn-primary") }}
   {% for message in get_flashed_messages() %}
       <div class="alert alert-info">{{ message }}</div>
   {% endfor %}

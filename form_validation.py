@@ -1,26 +1,31 @@
-from wtforms import Form, EmailField, PasswordField, StringField, BooleanField, validators
+from flask_wtf import FlaskForm
+from wtforms import EmailField, PasswordField, StringField, BooleanField, validators, SubmitField
+from wtforms.validators import Email, DataRequired, InputRequired
 
-class LoginForm(Form):
- email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), validators.Email(message='Invalid email address'), validators.InputRequired()])
- password = PasswordField('Password', [validators.length(min=12, message='Not long enough'), validators.InputRequired()])
+class LoginForm(FlaskForm):
+ email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), Email(message='Invalid email address'), DataRequired()])
+ password = PasswordField('Password', [validators.length(min=12, message='Not long enough'), DataRequired()])
+ submit = SubmitField('Submit')
 
 
-class RegistrationForm(Form):
- first_name = StringField('First Name', [validators.length(min=2, max=25), validators.InputRequired()])
- last_name = StringField('Last Name', [validators.length(min=2, max=25), validators.InputRequired()])
- email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), validators.Email(message='Invalid email address'), validators.InputRequired()])
- password = PasswordField('Password', [validators.length(min=10), validators.EqualTo('confirm_password', message='Passwords do not match'), validators.InputRequired()])
+class RegistrationForm(FlaskForm):
+ first_name = StringField('First Name', [validators.length(min=2, max=25), DataRequired()])
+ last_name = StringField('Last Name', [validators.length(min=2, max=25), DataRequired()])
+ email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), Email(message='Invalid email address'), DataRequired()])
+ password = PasswordField('Password', [validators.length(min=10), validators.EqualTo('confirm_password', message='Passwords do not match'), DataRequired()])
+ confirm_password = PasswordField('Reenter Password', [validators.length(min=10), DataRequired()])
+ submit = SubmitField('Submit')
+
+class ProfileForm(FlaskForm):
+ first_name = StringField('First Name', [validators.length(min=2, max=25), InputRequired()])
+ last_name = StringField('Last Name', [validators.length(min=2, max=25), InputRequired()])
+ email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), Email(message='Invalid email address'), DataRequired()])
+ password = PasswordField('Password', [validators.length(min=10), validators.EqualTo('confirm_password', message='Passwords do not match'), DataRequired()])
  confirm_password = PasswordField('Reenter Password', [validators.length(min=10), validators.InputRequired()])
-
-class ProfileForm(Form):
- first_name = StringField('First Name', [validators.length(min=2, max=25), validators.InputRequired()])
- last_name = StringField('Last Name', [validators.length(min=2, max=25), validators.InputRequired()])
- email = EmailField('Email Address', [validators.length(min=10, max=25, message='Invalid email length'), validators.Email(message='Invalid email address'), validators.InputRequired()])
- password = PasswordField('Password', [validators.length(min=10), validators.EqualTo('confirm_password', message='Passwords do not match'), validators.InputRequired()])
- confirm_password = PasswordField('Reenter Password', [validators.length(min=10), validators.InputRequired()])
+ submit = SubmitField('Submit')
  
 
-class WordForm(Form):
+class WordForm(FlaskForm):
  name = StringField('Name of Word', [validators.InputRequired()]),
  definition = StringField("Definiton of Word", [validators.InputRequired()])
  pronunciation = StringField("Word pronunciation")
@@ -30,4 +35,8 @@ class WordForm(Form):
  audio_url = StringField("Audio Link")
  parts_of_speech = StringField("Part of Speech")
  difficulty = StringField("Difficulty Level")
+ submit = SubmitField('Submit') 
+
+ class TestForm(FlaskForm):
+  name = StringField("Test name")
 
