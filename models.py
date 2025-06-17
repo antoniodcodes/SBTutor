@@ -1,9 +1,5 @@
-from flask_sqlalchemy import SqlAlchemy
-from flask_marshmallow import Marshmallow
-from server import app
+from server import db, ma
 
-db = SqlAlchemy(app)
-ma = Marshmallow(app)
 
 class User(db.Model):
 
@@ -21,6 +17,7 @@ class User(db.Model):
   imageUrl = db.Column(db.Text, nullable=True, default='default.png')
 
   #TODO: Add relationships
+  
 
   def __repr__(self):
     return f"<User id={self.id} first_name={self.first_name} last_name={self.last_name} email={self.email} level={self.level} state={self.state} country={self.country} _created_at={self._created_at} imageUrl={self.imageUrl}>"
@@ -32,7 +29,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 
 class Test(db.Model):
   __tablename__ = "tests"
-  #TODO: add fields
+
   id = db.Column(db.Integer, primary_key=True, autoincrement=True)
   test_name = db.Column(db.String(50), nullable=False)
   test_description = db.Column(db.Text, nullable=False)
@@ -77,14 +74,13 @@ class QuestionSchema(ma.SQLAlchemyAutoSchema):
     model = Question
 
 class QuestionType(db.Model):
-  __table_name__ = 'questiontype'
+  __tablename__ = 'questiontype'
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(30), nullable=False)
-
-  #TODO: add relationships
-
+ 
   def __repr__(self):
     return f"<QuestionType name={self.name}>"
+
 
 
 class Scoreboard(db.Model):

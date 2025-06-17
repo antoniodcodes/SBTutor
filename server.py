@@ -7,15 +7,18 @@ import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import User, Test, Question, Word
 from dotenv import load_dotenv
-
+from flask_marshmallow import Marshmallow
+from flask_sqlalchemy import SQLAlchemy
 load_dotenv()
 
 app = Flask('__name__')
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 user_schema = UserSchema()
 test_schema = TestSchema()
 question_schema = QuestionSchema()
@@ -295,9 +298,7 @@ def delete_test(test_id):
 
 # Connect to database
 def connect_to_db(app):
-  app.config('SQLALCHEMY_DATABASE_URI') = f"""
-  postgresql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASS')}@/{os.environ.get('CONNECTION_NAME')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}
-  """
+  app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("CONNECTION_STRING")
   app.config["SQLALCHEMY_ECHO"] = True
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
   db.app = app
