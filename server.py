@@ -1,28 +1,33 @@
-from flask import Flask, session, flash, request, render_template, redirect, jsonify
+from flask import Flask, session, flash, request, render_template, redirect, jsonify, url_for
 from flask_bcrypt import Bcrypt
 from form_validation import RegistrationForm, LoginForm, ProfileForm
-from models import db, UserSchema, TestSchema, QuestionSchema, WordSchema
+from schemas import user_schema, test_schema, question_schema, word_schema, users_schema, tests_schema, questions_schema, words_schema
 import crud
 import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import User, Test, Question, Word
-from dotenv import load_dotenv
-from flask_marshmallow import Marshmallow
-from flask_sqlalchemy import SQLAlchemy
-load_dotenv()
+from dotenv import load_dotenv, dotenv_values
+from extensions import db
+
+load_dotenv('.flaskenv')
+#for key, value in os.environ.items():
+#  print(f"{key}: {value}")
+DB_PROTOCOL = os.getenv('DB_PROTOCOL')
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
+CONNECTION_NAME = os.getenv('CONNECTION_NAME')
+DB_PORT = os.getenv('DB_PORT')
+DB_NAME = os.getenv('DB_NAME')
+CONNECTION_STRING=f"{DB_PROTOCOL}://{DB_USER}:{DB_PASS}@{CONNECTION_NAME}:{DB_PORT}/{DB_NAME}"
+print(CONNECTION_STRING)
 
 app = Flask('__name__')
-db = SQLAlchemy(app)
-ma = Marshmallow(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-user_schema = UserSchema()
-test_schema = TestSchema()
-question_schema = QuestionSchema()
-word_schema = WordSchema()
+print(os.getenv('CONNECTION_STRING'))
 
 @app.route('/', methods=['GET'])
 @app.route('/home')
@@ -153,22 +158,28 @@ def flashcards():
   @app.route('/api/users', methods=['POST'])
   def create_account():
     #TDDO: get values from request form
-    
-    #checks if a user with that given email already exists and give warning if user is found
-    if "user_id" not in session:
-      user = crud.get_user_by_email(email)
-      if user:
-        flash("User with that email already exists")
-        return redirect("/register"), 400
-    #if user not in database, add user and then redirect to user dashboard
-      else:
+    form = RegistrationForm()
+    if form.validate_on_submit():
+      first_name = form.first_name.data
+      last_name = form.last_name.data
+      email = form.email.data
+      password = form.password.data
+  
+      #checks if a user with that given email already exists and give warning if user is found
+      if "user_id" not in session:
+        user = crud.get_user_by_email(email)
+        if user:
+          flash("User with that email already exists")
+          return redirect("/register"), 400
+      #if user not in database, add user and then redirect to user dashboard
+        else:
         
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        new_user = User(first_name=first_name, last_name=last_name, email=email, hashed_password=hashed_password) #TODO: add other fields as needed
-        crud.add_user(new_user)
-        session['user_id'] = new_user.id
-        return redirect('/user_dashboard'), 201
-    
+          hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+          new_user = User(first_name=first_name, last_name=last_name, email=email, hashed_password=hashed_password) #TODO: add other fields as needed
+          crud.add_user(new_user)
+          session['user_id'] = new_user.id
+          return redirect('/user_dashboard'), 201
+    return redirect(url_for("get_index"))
 
 
   #TODO: add as a protected route
@@ -204,7 +215,7 @@ def get_all_words():
   return jsonify(crud.get_words())
 
 
-@app.route('/api/words/<int: id>')
+@app.route('/api/words/<int:id>')
 def get_single_word(id):
   word = crud.get_word_by_id(id)
   if word:
@@ -266,30 +277,29 @@ def get_tests():
   user = crud.get_user_by_id(session["user_id"])
   if user.is_admin():
     return jsonify(crud.get_tests())
-  else:
-    return jsonify(message="You are not an authorized user of this content"), 404
+  return jsonify(message="You are not an authorized user of this content"), 401
   
 
 @jwt_required()
-@app.route('/api/route/tests/<int: test_id>')
+@app.route('/api/tests/<int:test_id>')
 def get_single_test(test_id):
-  pass
+  if 'user_id' in session:
+    test = crud.get_tests_by_id(test_id)
+    if test:
+      return jsonify(test)
+    return f"Test with id {test_id} not found ", 404
+  return "Not authorized not view content", 401
 
 
 @app.route('/api/tests', methods=['POST'])
 def create_new_test():
   pass
 
-
-@app.route('/api/tests/<int: test_id')
-def get_single_test(test_id):
-  pass
-
-@app.route("/api/tests/<int: test_id", methods=['PUT'])
+@app.route("/api/tests/<int:test_id>", methods=['PUT'])
 def update_test(test_id):
   pass
 
-@app.route("/api/tests/<int: test_id", methods=['DELETE'])
+@app.route("/api/tests/<int:test_id>", methods=['DELETE'])
 def delete_test(test_id):
   pass
 
@@ -298,7 +308,10 @@ def delete_test(test_id):
 
 # Connect to database
 def connect_to_db(app):
-  app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("CONNECTION_STRING")
+  load_dotenv('.flaskenv')
+  app.config['FLASK_APP'] = os.getenv('FLASK_APP')
+  app.config['FLASK_ENV'] = os.getenv('FLASK_ENV')
+  app.config['SQLALCHEMY_DATABASE_URI'] = CONNECTION_STRING
   app.config["SQLALCHEMY_ECHO"] = True
   app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
   db.app = app

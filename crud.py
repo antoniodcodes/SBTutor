@@ -1,4 +1,5 @@
-from models import db, User, Test, Word, Scoreboard
+from extensions import db
+from models import User, Test, Word, TestScore
 
 
 def get_user_by_email(email):
@@ -105,3 +106,9 @@ def delete_word(id: int):
   else:
     return None
   
+def get_user_scoreboard(id: int):
+  pass
+
+def get_master_scoreboard():
+  pass
+
