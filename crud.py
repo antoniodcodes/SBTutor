@@ -107,7 +107,10 @@ def delete_word(id: int):
     return None
   
 def get_user_scoreboard(id: int):
-  pass
+  user = get_user_by_id(id)
+  if user:
+    return db.session(TestScore).filter(TestScore.user_id == id).all()
+  return None
 
 def get_master_scoreboard():
   pass

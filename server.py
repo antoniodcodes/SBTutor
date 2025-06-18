@@ -1,6 +1,6 @@
 from flask import Flask, session, flash, request, render_template, redirect, jsonify, url_for
 from flask_bcrypt import Bcrypt
-from form_validation import RegistrationForm, LoginForm, ProfileForm
+from form_validation import RegistrationForm, LoginForm, ProfileForm, WordForm
 from schemas import user_schema, test_schema, question_schema, word_schema, users_schema, tests_schema, questions_schema, words_schema
 import crud
 import os
@@ -10,8 +10,7 @@ from dotenv import load_dotenv, dotenv_values
 from extensions import db
 
 load_dotenv('.flaskenv')
-#for key, value in os.environ.items():
-#  print(f"{key}: {value}")
+
 DB_PROTOCOL = os.getenv('DB_PROTOCOL')
 DB_USER = os.getenv('DB_USER')
 DB_PASS = os.getenv('DB_PASS')
@@ -171,10 +170,10 @@ def flashcards():
         if user:
           flash("User with that email already exists")
           return redirect("/register"), 400
-      #if user not in database, add user and then redirect to user dashboard
+        #if user not in database, add user and then redirect to user dashboard
         else:
         
-          hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+          hashed_password = bcrypt.generate_password_hash(password, 16).decode('utf-8')
           new_user = User(first_name=first_name, last_name=last_name, email=email, hashed_password=hashed_password) #TODO: add other fields as needed
           crud.add_user(new_user)
           session['user_id'] = new_user.id
@@ -201,7 +200,11 @@ def flashcards():
           email = form.email.data
           password = form.password.data
           country = form.country.data
-        pass
+          hashed_password = bcrypt.generate_password_hash(password, 16).decode('utf-8')
+          if bcrypt.check_password_hash(user.hashed_password, password):
+            hashed_password = user.hashed_password
+          updated_user = User(first_name=first_name, last_name=last_name, email=email, hashed_password=hashed_password, country=country)
+        
       elif request.method == 'DELETE':
         crud.delete_user(user_id)
         flash("User successfully deleted")
@@ -235,7 +238,7 @@ def add_word():
   
    #if word does not exist, add word to the database
   else:
-   
+    form = WordForm()
     new_word = None #TODO: replace with constructor values and form values
     crud.add_word(new_word)
     #flash success message and return word with 201 status code
@@ -244,9 +247,21 @@ def add_word():
 
 @app.route('/api/words/<int:id>', methods=['PUT'])
 def update_word(id):
-  #TODO: get word values from form
-
-  updated_word = None #TODO: update with values from form
+  
+  form = WordForm()
+     
+  updated_word = None 
+  if form.validate_on_submit():
+    name = form.name.data
+    definition = form.definition.data
+    pronunciation = form.pronunciation.data
+    etymology = form.etymology.data
+    usage = form.usge.data
+    image_url = form.image_url.data
+    audio_url = form.audio_url.data
+    parts_of_speech = form.parts_of_speech.data
+    difficulty = form.difficulty.data
+    updated_word = Word(name=name, definition=definition, pronunciation=pronunciation,etymology=etymology, usage=usage, image_url=image_url, audio_url=audio_url, parts_of_speech=parts_of_speech, difficulty_level=difficulty)
   
   word = crud.get_word_by_id(id)
   if word:
@@ -259,9 +274,10 @@ def update_word(id):
 
 @app.route('/api/words/<int:id>', methods=['DELETE'])
 def delete_word(id):
-  #TODO: check if word exists in the database
+  # check if word exists in the database
   word = crud.get_word_by_id(id)
-  #TODO: delete word from the database
+  
+  # delete word from the database
   if word:
     crud.delete_user(id)
     flash("Word was successfully deleted from our database")
