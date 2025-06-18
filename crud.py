@@ -109,9 +109,17 @@ def delete_word(id: int):
 def get_user_scoreboard(id: int):
   user = get_user_by_id(id)
   if user:
-    return db.session(TestScore).filter(TestScore.user_id == id).all()
+    return db.session.query(TestScore).filter(TestScore.user_id == id).order_by(TestScore.score).desc().all()
   return None
 
 def get_master_scoreboard():
-  pass
+  return db.session.query(TestScore).all()
+
+def get_topN_list(nLimit: int, user_id=None):
+  if user_id;
+    user = get_user_by_id(user_id)
+    if user:
+      user_dashboard = get_user_scoreboard(user_id)
+      return user_dashboard[:nLimit]
+  return db.session.query(TestScore).group_by(TestScore.user_id).order_by(TestScore.score).limit(nLimit).all()
 
