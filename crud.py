@@ -116,7 +116,7 @@ def get_master_scoreboard():
   return db.session.query(TestScore).all()
 
 def get_topN_list(nLimit: int, user_id=None):
-  if user_id;
+  if user_id:
     user = get_user_by_id(user_id)
     if user:
       user_dashboard = get_user_scoreboard(user_id)
