@@ -28,7 +28,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 print(os.getenv('CONNECTION_STRING'))
 
-@app.route('/', methods=['GET'])
+@app.route('/')
 @app.route('/home')
 @app.route('/index')
 def get_index():
@@ -37,14 +37,14 @@ def get_index():
 
 @app.route('/login', methods=['GET'])
 def login():
-  form = LoginForm(request.form)
-  return render_template("login.html", form=form)
+  form = LoginForm()
+  return render_template("login.html", login_form=form)
 
 
 @app.route('/register', methods=['GET'])
 def register():
-  form = RegistrationForm(request.form)
-  return render_template("register.html", form=form)
+  form = RegistrationForm()
+  return render_template("register.html", register_form=form)
 
 # @jwt_required()
 @app.route('/profile', methods=['GET'])
@@ -53,16 +53,19 @@ def user_profile():
   user = crud.get_user_by_email(email)
   if user:
     form = ProfileForm()
-    return render_template("user_profile.html", form=form, user=user)
+    return render_template("user_profile.html", profile_form=form, user=user)
   else:
     return redirect("/")
 
 @app.route("/user_dashboard", methods=['POST'])
 def userdashboard():
   # Get user
-  email = request.form.get("email")
-  password = request.form.get("password")
-  user = crud.get_user_by_email(email)
+  user = None
+  form = LoginForm()
+  if form.validate_on_submit():
+    email = form.email.data
+    password = form.password.data
+    user = crud.get_user_by_email(email)
   
   #validate user and check that passwords match
   if user and bcrypt.check_password(user.hashed_password, password):

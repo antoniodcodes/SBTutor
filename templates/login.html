@@ -2,9 +2,9 @@
 {% block title %} Login {% endblock %}
 {% block main_content %}
   <form action="/user_dashboard" method="get" class="">
-    <div>{{ login_form.hidden_tag }}</div>
-    <div>{{ login_form.email.label}}: {{ login_form.email(class="") }}</div>
-    <div>{{ login_form.password.label }}: {{ login_form.password(class="") }}</div>
-    <input type="submit" value="Login">
+    <div class="mb-3">{{ login_form.hidden_tag }}</div>
+    <div class="mb-3">{{ login_form.email.label(class="form-label")}}: {{ login_form.email(class="form-control") }}</div>
+    <div class="mb-3">{{ login_form.password.label(class="form-label") }}: {{ login_form.password(class="form-control") }}</div>
+    {{ login_form.submit(class="btn btn-primary")}}
   </form>
 {% endblock %}
