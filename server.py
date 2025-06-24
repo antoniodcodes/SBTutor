@@ -6,7 +6,7 @@ import crud
 import os
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import User, Test, Question, Word
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 from extensions import db
 
 load_dotenv('.flaskenv')
@@ -18,7 +18,6 @@ CONNECTION_NAME = os.getenv('CONNECTION_NAME')
 DB_PORT = os.getenv('DB_PORT')
 DB_NAME = os.getenv('DB_NAME')
 CONNECTION_STRING=f"{DB_PROTOCOL}://{DB_USER}:{DB_PASS}@{CONNECTION_NAME}:{DB_PORT}/{DB_NAME}"
-print(CONNECTION_STRING)
 
 app = Flask('__name__')
 bcrypt = Bcrypt(app)
